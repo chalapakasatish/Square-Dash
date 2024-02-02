@@ -8,7 +8,7 @@ public class PlayerRotator : MonoBehaviour
 {
     [Header("Components")]
     [SerializeField] private new Renderer renderer;
-   private PlayerController playerController;
+    private PlayerController playerController;
     [Header("Settings")]
     [SerializeField] private float angleIncrement;
     [SerializeField] private float leanAngleTime;
@@ -17,9 +17,18 @@ public class PlayerRotator : MonoBehaviour
     private void Awake()
     {
         playerController = GetComponent<PlayerController>();
+        playerController.OnExploded += Explode;
+        playerController.OnRevived += Revive;
+    }
+    private void OnDestroy()
+    {
+        playerController.OnExploded -= Explode;
+        playerController.OnRevived -= Revive;
     }
     void Update()
     {
+        if (playerController.IsDead())
+            return;
         ManagePlayerRotation();
     }
     private void ManagePlayerRotation()
@@ -68,5 +77,14 @@ public class PlayerRotator : MonoBehaviour
         LeanTween.rotateAroundLocal(renderer.gameObject, Vector3.forward, -angleDifference, leanAngleTime);
 
         isTweening = true;
+    }
+    private void Explode()
+    {
+        renderer.enabled = false;
+    }
+    private void Revive()
+    {
+        renderer.enabled = true;
+        renderer.transform.rotation = Quaternion.identity;
     }
 }

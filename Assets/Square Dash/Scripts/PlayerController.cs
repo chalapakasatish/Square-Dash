@@ -1,9 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
+    enum State { Alive, Dead }
+    private State state;
+
     [Header("Components")]
     private Rigidbody2D rig;
 
@@ -17,20 +21,35 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundDetectionRadius;
     private bool isJumping;
 
+    [Header("Actions")]
+    public Action OnExploded;
+    public Action OnRevived;
+
+    [Header("Effects")]
+    [SerializeField] private ParticleSystem explodeParticles;
     private void Awake()
     {
+        state = State.Alive;
         rig = GetComponent<Rigidbody2D>();
     }
 
     void Update()
     {
-        if(Input.GetMouseButtonDown(0) || Input.GetMouseButton(0))
+        if (IsDead())
+        {
+            return;
+        }
+        if (Input.GetMouseButtonDown(0) || Input.GetMouseButton(0))
         {
             Jump();
         }
     }
     private void FixedUpdate()
     {
+        if (IsDead())
+        {
+            return;
+        }
         Vector2 velocity = rig.velocity;
 
         velocity.x = moveSpeed;
@@ -49,6 +68,23 @@ public class PlayerController : MonoBehaviour
             isJumping = true;
         }
     }
+    public void Explode()
+    {
+        state = State.Dead;
+        rig.isKinematic = true;
+        rig.velocity = Vector2.zero;
+        explodeParticles.Play();
+        LeanTween.delayedCall(2,Revive);
+        OnExploded?.Invoke();
+    }
+    private void Revive()
+    {
+        state = State.Alive;
+        transform.position = Vector3.up * 0.5f;
+        rig.isKinematic = false;
+        OnRevived?.Invoke();
+    }
+    public bool IsDead() => state == State.Dead;
     public bool IsGrounded()
     {
         Collider2D ground = Physics2D.OverlapCircle(groundDetector.position, groundDetectionRadius, groundMask);
