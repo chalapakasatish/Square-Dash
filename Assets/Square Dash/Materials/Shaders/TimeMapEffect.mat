@@ -76,8 +76,8 @@ Material:
     - _MaxDistance_4: 1
     - _MaxDistance_5: 1
     - _MaxDistance_6: 1
-    - _Max_Distance: 6
-    - _UV_Scale: 150
+    - _Max_Distance: 7
+    - _UV_Scale: 500
     - _UV_Scale_1: 1
     - _UV_Scale_2: 0
     m_Colors:
