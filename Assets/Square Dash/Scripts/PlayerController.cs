@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     enum State { Alive, Dead }
     private State state;
 
+    enum MotionType { Square,Spaceship}
+    private MotionType motionType;
     [Header("Components")]
     private Rigidbody2D rig;
 
@@ -21,6 +23,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundDetectionRadius;
     private bool isJumping;
 
+    [Header("Spaceship Settings")]
+    [SerializeField] private float spaceshipAcceleration;
+
     [Header("Actions")]
     public Action OnExploded;
     public Action OnRevived;
@@ -30,6 +35,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         state = State.Alive;
+        motionType = MotionType.Square;
         rig = GetComponent<Rigidbody2D>();
     }
 
@@ -50,15 +56,45 @@ public class PlayerController : MonoBehaviour
         {
             return;
         }
+        switch (motionType)
+        {
+            case MotionType.Square:
+                SquareFixedUpdate();
+                break;
+            case MotionType.Spaceship:
+                SpaceshipFixedUpdate();
+                break;
+            default:
+                break;
+        }
+    }
+    public void SquareFixedUpdate()
+    {
         Vector2 velocity = rig.velocity;
 
         velocity.x = moveSpeed;
-        if(isJumping)
+        if (isJumping)
         {
             velocity.y = jumpSpeed;
             isJumping = false;
         }
-        
+
+        rig.velocity = velocity;
+    }
+    public void SpaceshipFixedUpdate()
+    {
+        Vector2 velocity = rig.velocity;
+
+        velocity.x = moveSpeed;
+        if (IsPressing())
+        {
+            velocity.y += spaceshipAcceleration;
+        }
+        else
+        {
+            velocity.y -= spaceshipAcceleration;
+        }
+
         rig.velocity = velocity;
     }
     public void Jump()
@@ -95,5 +131,16 @@ public class PlayerController : MonoBehaviour
     {
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(groundDetector.position, groundDetectionRadius);
+    }
+
+    public void SetSpaceshipMotionType()
+    {
+        if(motionType == MotionType.Spaceship)
+        {
+            return;
+        }
+        motionType = MotionType.Spaceship;
+        rig.gravityScale = 0;
+        Debug.Log("Hit a Spacship Trigger");
     }
 }
