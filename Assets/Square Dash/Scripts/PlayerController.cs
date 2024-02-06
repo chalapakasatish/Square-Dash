@@ -29,6 +29,8 @@ public class PlayerController : MonoBehaviour
     [Header("Actions")]
     public Action OnExploded;
     public Action OnRevived;
+    public static Action onSpaceshipModeStarted;
+    public static Action onSquareModeStarted;
 
     [Header("Effects")]
     [SerializeField] private ParticleSystem explodeParticles;
@@ -119,6 +121,7 @@ public class PlayerController : MonoBehaviour
         transform.position = Vector3.up * 0.5f;
         rig.isKinematic = false;
         OnRevived?.Invoke();
+        SetSquareMotionType();
     }
     public bool IsDead() => state == State.Dead;
     public bool IsGrounded()
@@ -127,12 +130,24 @@ public class PlayerController : MonoBehaviour
         return ground != null;
     }
     public bool IsPressing() => Input.GetMouseButton(0);
+    public bool IsSquareMode() => motionType == MotionType.Square;
+    public float GetYVelocity() => rig.velocity.y;
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.magenta;
         Gizmos.DrawWireSphere(groundDetector.position, groundDetectionRadius);
     }
-
+    public void SetSquareMotionType()
+    {
+        if (motionType == MotionType.Square)
+        {
+            return;
+        }
+        motionType = MotionType.Square;
+        rig.gravityScale = 1;
+        onSquareModeStarted?.Invoke();
+    }
     public void SetSpaceshipMotionType()
     {
         if(motionType == MotionType.Spaceship)
@@ -141,6 +156,7 @@ public class PlayerController : MonoBehaviour
         }
         motionType = MotionType.Spaceship;
         rig.gravityScale = 0;
+        onSpaceshipModeStarted?.Invoke();
         Debug.Log("Hit a Spacship Trigger");
     }
 }

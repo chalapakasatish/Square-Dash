@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,29 +8,52 @@ using UnityEngine.Rendering;
 public class PlayerRotator : MonoBehaviour
 {
     [Header("Components")]
-    [SerializeField] private new Renderer renderer;
+    [SerializeField] private Transform rotatorParent;
     private PlayerController playerController;
     [Header("Settings")]
     [SerializeField] private float angleIncrement;
     [SerializeField] private float leanAngleTime;
     private bool isTweening;
-
+    [Header("Spaceship Settings")]
+    [SerializeField] private float spaceshipRotationMultiplier;
     private void Awake()
     {
         playerController = GetComponent<PlayerController>();
         playerController.OnExploded += Explode;
         playerController.OnRevived += Revive;
+        PlayerController.onSpaceshipModeStarted += SpaceshipModeStarted;
     }
+
+    
     private void OnDestroy()
     {
         playerController.OnExploded -= Explode;
         playerController.OnRevived -= Revive;
+        PlayerController.onSpaceshipModeStarted -= SpaceshipModeStarted;
     }
     void Update()
     {
         if (playerController.IsDead())
             return;
-        ManagePlayerRotation();
+        if (playerController.IsSquareMode())
+        {
+            ManagePlayerRotation();
+        }
+        else
+        {
+            ManageSpaceshipRotation();
+        }
+    }
+    public void ManageSpaceshipRotation()
+    {
+        float yVelocity = playerController.GetYVelocity();
+        yVelocity *= spaceshipRotationMultiplier;
+        rotatorParent.right = Quaternion.Euler(Vector3.forward * yVelocity) * Vector3.right;
+    }
+    private void SpaceshipModeStarted()
+    {
+        LeanTween.cancel(rotatorParent.gameObject);
+        rotatorParent.rotation = Quaternion.identity;
     }
     private void ManagePlayerRotation()
     {
@@ -45,10 +69,10 @@ public class PlayerRotator : MonoBehaviour
     {
         if(isTweening)
         {
-            LeanTween.cancel(renderer.gameObject);
+            LeanTween.cancel(rotatorParent.gameObject);
             isTweening = false;
         }
-        renderer.transform.localEulerAngles += Vector3.forward * Time.deltaTime * angleIncrement;
+        rotatorParent.transform.localEulerAngles += Vector3.forward * Time.deltaTime * angleIncrement;
     }
     private void PlayerGroundedState()
     {
@@ -57,7 +81,7 @@ public class PlayerRotator : MonoBehaviour
             if(isTweening) 
             {
                 isTweening = false;
-                LeanTween.cancel(renderer.gameObject);            
+                LeanTween.cancel(rotatorParent.gameObject);            
             }
             return;
         }
@@ -65,26 +89,28 @@ public class PlayerRotator : MonoBehaviour
         {
             return;
         }
-        float closestAngle = Mathf.FloorToInt(renderer.transform.localEulerAngles.z / 90) * 90;
-        float angleDifference = renderer.transform.localEulerAngles.z - closestAngle;
+        float closestAngle = Mathf.FloorToInt(rotatorParent.transform.localEulerAngles.z / 90) * 90;
+        float angleDifference = rotatorParent.transform.localEulerAngles.z - closestAngle;
 
         if(angleDifference > 45) 
         {
             angleDifference = (90 - angleDifference) * -1; 
         }
 
-        LeanTween.cancel(renderer.gameObject);
-        LeanTween.rotateAroundLocal(renderer.gameObject, Vector3.forward, -angleDifference, leanAngleTime);
+        LeanTween.cancel(rotatorParent.gameObject);
+        LeanTween.rotateAroundLocal(rotatorParent.gameObject, Vector3.forward, -angleDifference, leanAngleTime);
 
         isTweening = true;
     }
+    
+
     private void Explode()
     {
-        renderer.enabled = false;
+        rotatorParent.gameObject.SetActive(false);
     }
     private void Revive()
     {
-        renderer.enabled = true;
-        renderer.transform.rotation = Quaternion.identity;
+        rotatorParent.gameObject.SetActive(true);
+        rotatorParent.transform.rotation = Quaternion.identity;
     }
 }
