@@ -25,6 +25,10 @@ public class PlayerDetection : MonoBehaviour
         {
             playerController.SetSpaceshipMotionType();
         }
+        if (collider.TryGetComponent(out SquareTrigger squareTrigger))
+        {
+            playerController.SetSquareMotionType();
+        }
     }
     private void OnCollisionEnter2D(Collision2D collision)
     {
