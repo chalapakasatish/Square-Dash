@@ -356,12 +356,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a0af8ccdbbdf2f741941f00ae2c7c16f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  squareMotionData: {fileID: 11400000, guid: 19ca60e4cb429f64ab94733e5e78822d, type: 2}
+  spaceshipMotionData: {fileID: 11400000, guid: 7467f891e526e8c4897fddd9fbfa2fc5, type: 2}
   groundDetector: {fileID: 72510465}
   groundMask:
     serializedVersion: 2
     m_Bits: 64
-  moveSpeed: 9.5
-  jumpSpeed: 19
   groundDetectionRadius: 0.05
   spaceshipAcceleration: 1
   explodeParticles: {fileID: 127758642}

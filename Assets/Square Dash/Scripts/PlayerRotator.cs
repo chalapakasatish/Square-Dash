@@ -35,13 +35,14 @@ public class PlayerRotator : MonoBehaviour
     {
         if (playerController.IsDead())
             return;
-        if (playerController.IsSquareMode())
+        switch(playerController.GetMotionType())
         {
-            ManagePlayerRotation();
-        }
-        else
-        {
-            ManageSpaceshipRotation();
+            case MotionType.Square:
+                ManagePlayerRotation();
+                break;
+            case MotionType.Spaceship:
+                ManageSpaceshipRotation();
+                break;
         }
     }
     public void ManageSpaceshipRotation()
